@@ -414,14 +414,16 @@
     try {
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
-      // no-cors mode always returns opaque response — treat as success
-      document.getElementById('status').innerHTML = '<span class="success">✅ Health check-in logged successfully!</span>';
-      btn.textContent = '✅ Logged!';
+      if (response.ok || response.status === 202) {
+        document.getElementById('status').innerHTML = '<span class="success">✅ Health check-in logged successfully!</span>';
+        btn.textContent = '✅ Logged!';
+      } else {
+        throw new Error(`HTTP ${response.status}`);
+      }
     } catch (err) {
       document.getElementById('status').innerHTML = `<span class="error">❌ Error: ${err.message}. Please try again.</span>`;
       btn.disabled = false;
