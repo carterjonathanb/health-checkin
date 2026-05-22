@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Daily Health Check-In</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #1c1c1e;
+      color: #f2f2f7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .date {
+      font-size: 14px;
+      color: #8e8e93;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .card {
+      background: #2c2c2e;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .question {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .fyi {
+      font-size: 13px;
+      color: #8e8e93;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    /* Star rating (1–5) */
+    .stars {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .stars label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .stars input[type="radio"] { display: none; }
+
+    .stars .star-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: #3a3a3c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      transition: background 0.15s;
+    }
+
+    .stars input[type="radio"]:checked + .star-btn {
+      background: #ff9f0a;
+    }
+
+    .stars .star-label {
+      font-size: 11px;
+      color: #8e8e93;
+    }
+
+    /* Numeric scale (1–10) */
+    .scale {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .scale label { cursor: pointer; }
+    .scale input[type="radio"] { display: none; }
+
+    .scale .scale-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #3a3a3c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+
+    .scale input[type="radio"]:checked + .scale-btn {
+      background: #0a84ff;
+      color: #fff;
+    }
+
+    /* Exercise toggle */
+    .toggle-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .toggle-row label { cursor: pointer; }
+    .toggle-row input[type="radio"] { display: none; }
+
+    .toggle-btn {
+      padding: 14px 32px;
+      border-radius: 12px;
+      background: #3a3a3c;
+      font-size: 17px;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+
+    .toggle-row input[type="radio"]:checked + .toggle-btn {
+      background: #30d158;
+      color: #fff;
+    }
+
+    /* Notes */
+    textarea {
+      width: 100%;
+      background: #3a3a3c;
+      border: none;
+      border-radius: 10px;
+      color: #f2f2f7;
+      font-size: 15px;
+      padding: 12px;
+      resize: none;
+      min-height: 80px;
+      font-family: inherit;
+    }
+
+    textarea::placeholder { color: #636366; }
+    textarea:focus { outline: 2px solid #0a84ff; }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%;
+      max-width: 480px;
+      padding: 18px;
+      border-radius: 14px;
+      background: #0a84ff;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.15s;
+    }
+
+    .submit-btn:active { opacity: 0.8; }
+    .submit-btn:disabled { background: #3a3a3c; color: #636366; cursor: default; }
+
+    /* Status */
+    #status {
+      margin-top: 16px;
+      font-size: 16px;
+      text-align: center;
+      min-height: 24px;
+    }
+
+    .success { color: #30d158; }
+    .error   { color: #ff453a; }
+  </style>
+</head>
+<body>
+
+<h1>🌙 Daily Health Check-In</h1>
+<div class="date" id="date-display"></div>
+
+<!-- Q1: Sleep -->
+<div class="card">
+  <div class="question">How was your sleep last night (1–5 ★)?</div>
+  <div class="fyi">1 = Worst possible (none) · 5 = Best possible (8h, uninterrupted)</div>
+  <div class="stars">
+    <label><input type="radio" name="sleep" value="1"><span class="star-btn">1</span><span class="star-label">Worst</span></label>
+    <label><input type="radio" name="sleep" value="2"><span class="star-btn">2</span><span class="star-label"></span></label>
+    <label><input type="radio" name="sleep" value="3"><span class="star-btn">3</span><span class="star-label"></span></label>
+    <label><input type="radio" name="sleep" value="4"><span class="star-btn">4</span><span class="star-label"></span></label>
+    <label><input type="radio" name="sleep" value="5"><span class="star-btn">5</span><span class="star-label">Best</span></label>
+  </div>
+</div>
+
+<!-- Q2: Physical -->
+<div class="card">
+  <div class="question">How was your physical health today (1–5 ★)?</div>
+  <div class="fyi">1 = Worst possible (seeking professional help) · 5 = Best possible</div>
+  <div class="stars">
+    <label><input type="radio" name="physical" value="1"><span class="star-btn">1</span><span class="star-label">Worst</span></label>
+    <label><input type="radio" name="physical" value="2"><span class="star-btn">2</span><span class="star-label"></span></label>
+    <label><input type="radio" name="physical" value="3"><span class="star-btn">3</span><span class="star-label"></span></label>
+    <label><input type="radio" name="physical" value="4"><span class="star-btn">4</span><span class="star-label"></span></label>
+    <label><input type="radio" name="physical" value="5"><span class="star-btn">5</span><span class="star-label">Best</span></label>
+  </div>
+</div>
+
+<!-- Q3: Mental -->
+<div class="card">
+  <div class="question">How was your mental health today (1–5 ★)?</div>
+  <div class="fyi">1 = Worst possible (seeking professional help) · 5 = Best possible</div>
+  <div class="stars">
+    <label><input type="radio" name="mental" value="1"><span class="star-btn">1</span><span class="star-label">Worst</span></label>
+    <label><input type="radio" name="mental" value="2"><span class="star-btn">2</span><span class="star-label"></span></label>
+    <label><input type="radio" name="mental" value="3"><span class="star-btn">3</span><span class="star-label"></span></label>
+    <label><input type="radio" name="mental" value="4"><span class="star-btn">4</span><span class="star-label"></span></label>
+    <label><input type="radio" name="mental" value="5"><span class="star-btn">5</span><span class="star-label">Best</span></label>
+  </div>
+</div>
+
+<!-- Q4: Fatigue -->
+<div class="card">
+  <div class="question">How was your fatigue today (1–10)?</div>
+  <div class="fyi">1 = None · 10 = Worst-ever (seeking professional help)<br>FYI: Mild (daytime sleepiness) = 4–6; Strong (daytime napping) = 7+</div>
+  <div class="scale">
+    <label><input type="radio" name="fatigue" value="1"><span class="scale-btn">1</span></label>
+    <label><input type="radio" name="fatigue" value="2"><span class="scale-btn">2</span></label>
+    <label><input type="radio" name="fatigue" value="3"><span class="scale-btn">3</span></label>
+    <label><input type="radio" name="fatigue" value="4"><span class="scale-btn">4</span></label>
+    <label><input type="radio" name="fatigue" value="5"><span class="scale-btn">5</span></label>
+    <label><input type="radio" name="fatigue" value="6"><span class="scale-btn">6</span></label>
+    <label><input type="radio" name="fatigue" value="7"><span class="scale-btn">7</span></label>
+    <label><input type="radio" name="fatigue" value="8"><span class="scale-btn">8</span></label>
+    <label><input type="radio" name="fatigue" value="9"><span class="scale-btn">9</span></label>
+    <label><input type="radio" name="fatigue" value="10"><span class="scale-btn">10</span></label>
+  </div>
+</div>
+
+<!-- Q5: Pain -->
+<div class="card">
+  <div class="question">How was your pain today (1–10)?</div>
+  <div class="fyi">1 = None · 10 = Worst-ever (seeking professional help)<br>FYI: Mild (manageable with OTC pain relievers) = 4–6; Severe (requires Rx pain relievers) = 7+</div>
+  <div class="scale">
+    <label><input type="radio" name="pain" value="1"><span class="scale-btn">1</span></label>
+    <label><input type="radio" name="pain" value="2"><span class="scale-btn">2</span></label>
+    <label><input type="radio" name="pain" value="3"><span class="scale-btn">3</span></label>
+    <label><input type="radio" name="pain" value="4"><span class="scale-btn">4</span></label>
+    <label><input type="radio" name="pain" value="5"><span class="scale-btn">5</span></label>
+    <label><input type="radio" name="pain" value="6"><span class="scale-btn">6</span></label>
+    <label><input type="radio" name="pain" value="7"><span class="scale-btn">7</span></label>
+    <label><input type="radio" name="pain" value="8"><span class="scale-btn">8</span></label>
+    <label><input type="radio" name="pain" value="9"><span class="scale-btn">9</span></label>
+    <label><input type="radio" name="pain" value="10"><span class="scale-btn">10</span></label>
+  </div>
+</div>
+
+<!-- Q6: Neuro Motor -->
+<div class="card">
+  <div class="question">How were your neurological motor symptoms today (1–10)?</div>
+  <div class="fyi">1 = None · 10 = Worst-ever (seeking professional help)<br>FYI: Mild (tingling or numbness in limbs) = 4–6; Severe (tingling or numbness in limbs) = 7+</div>
+  <div class="scale">
+    <label><input type="radio" name="neuro_motor" value="1"><span class="scale-btn">1</span></label>
+    <label><input type="radio" name="neuro_motor" value="2"><span class="scale-btn">2</span></label>
+    <label><input type="radio" name="neuro_motor" value="3"><span class="scale-btn">3</span></label>
+    <label><input type="radio" name="neuro_motor" value="4"><span class="scale-btn">4</span></label>
+    <label><input type="radio" name="neuro_motor" value="5"><span class="scale-btn">5</span></label>
+    <label><input type="radio" name="neuro_motor" value="6"><span class="scale-btn">6</span></label>
+    <label><input type="radio" name="neuro_motor" value="7"><span class="scale-btn">7</span></label>
+    <label><input type="radio" name="neuro_motor" value="8"><span class="scale-btn">8</span></label>
+    <label><input type="radio" name="neuro_motor" value="9"><span class="scale-btn">9</span></label>
+    <label><input type="radio" name="neuro_motor" value="10"><span class="scale-btn">10</span></label>
+  </div>
+</div>
+
+<!-- Q7: Neuro Cognitive -->
+<div class="card">
+  <div class="question">How were your neurological cognitive symptoms today (1–10)?</div>
+  <div class="fyi">1 = None · 10 = Worst-ever (seeking professional help)<br>FYI: Mild (memory, word-finding, train-of-thought) = 4–6; Severe (memory, word-finding, train-of-thought) = 7+</div>
+  <div class="scale">
+    <label><input type="radio" name="neuro_cognitive" value="1"><span class="scale-btn">1</span></label>
+    <label><input type="radio" name="neuro_cognitive" value="2"><span class="scale-btn">2</span></label>
+    <label><input type="radio" name="neuro_cognitive" value="3"><span class="scale-btn">3</span></label>
+    <label><input type="radio" name="neuro_cognitive" value="4"><span class="scale-btn">4</span></label>
+    <label><input type="radio" name="neuro_cognitive" value="5"><span class="scale-btn">5</span></label>
+    <label><input type="radio" name="neuro_cognitive" value="6"><span class="scale-btn">6</span></label>
+    <label><input type="radio" name="neuro_cognitive" value="7"><span class="scale-btn">7</span></label>
+    <label><input type="radio" name="neuro_cognitive" value="8"><span class="scale-btn">8</span></label>
+    <label><input type="radio" name="neuro_cognitive" value="9"><span class="scale-btn">9</span></label>
+    <label><input type="radio" name="neuro_cognitive" value="10"><span class="scale-btn">10</span></label>
+  </div>
+</div>
+
+<!-- Q8: GI -->
+<div class="card">
+  <div class="question">How were your gastrointestinal symptoms today (1–10)?</div>
+  <div class="fyi">1 = None · 10 = Worst-ever (seeking professional help)<br>FYI: Mild (loss of appetite, nausea) = 4–6; Strong (diarrhea, vomiting) = 7+</div>
+  <div class="scale">
+    <label><input type="radio" name="gi" value="1"><span class="scale-btn">1</span></label>
+    <label><input type="radio" name="gi" value="2"><span class="scale-btn">2</span></label>
+    <label><input type="radio" name="gi" value="3"><span class="scale-btn">3</span></label>
+    <label><input type="radio" name="gi" value="4"><span class="scale-btn">4</span></label>
+    <label><input type="radio" name="gi" value="5"><span class="scale-btn">5</span></label>
+    <label><input type="radio" name="gi" value="6"><span class="scale-btn">6</span></label>
+    <label><input type="radio" name="gi" value="7"><span class="scale-btn">7</span></label>
+    <label><input type="radio" name="gi" value="8"><span class="scale-btn">8</span></label>
+    <label><input type="radio" name="gi" value="9"><span class="scale-btn">9</span></label>
+    <label><input type="radio" name="gi" value="10"><span class="scale-btn">10</span></label>
+  </div>
+</div>
+
+<!-- Q9: Psychiatric -->
+<div class="card">
+  <div class="question">How were your psychiatric symptoms today (1–10)?</div>
+  <div class="fyi">1 = None · 10 = Worst-ever (seeking professional help)<br>FYI: Mild (anxiety, irritability) = 4–6; Strong (depression, mood changes) = 7+</div>
+  <div class="scale">
+    <label><input type="radio" name="psychiatric" value="1"><span class="scale-btn">1</span></label>
+    <label><input type="radio" name="psychiatric" value="2"><span class="scale-btn">2</span></label>
+    <label><input type="radio" name="psychiatric" value="3"><span class="scale-btn">3</span></label>
+    <label><input type="radio" name="psychiatric" value="4"><span class="scale-btn">4</span></label>
+    <label><input type="radio" name="psychiatric" value="5"><span class="scale-btn">5</span></label>
+    <label><input type="radio" name="psychiatric" value="6"><span class="scale-btn">6</span></label>
+    <label><input type="radio" name="psychiatric" value="7"><span class="scale-btn">7</span></label>
+    <label><input type="radio" name="psychiatric" value="8"><span class="scale-btn">8</span></label>
+    <label><input type="radio" name="psychiatric" value="9"><span class="scale-btn">9</span></label>
+    <label><input type="radio" name="psychiatric" value="10"><span class="scale-btn">10</span></label>
+  </div>
+</div>
+
+<!-- Q10: Exercise -->
+<div class="card">
+  <div class="question">Did you exercise today?</div>
+  <div class="fyi">0 = No · 1 = Yes (30+ min)</div>
+  <div class="toggle-row">
+    <label><input type="radio" name="exercise" value="0"><span class="toggle-btn">0 — No</span></label>
+    <label><input type="radio" name="exercise" value="1"><span class="toggle-btn">1 — Yes</span></label>
+  </div>
+</div>
+
+<!-- Notes -->
+<div class="card">
+  <div class="question">Notes</div>
+  <div class="fyi">Optional. For multiple notes, separate with | e.g. Sleep: restless | Pain: lower back</div>
+  <textarea name="notes" id="notes" placeholder="Leave blank if none..."></textarea>
+</div>
+
+<button class="submit-btn" id="submit-btn" onclick="submitCheckin()">Log Tonight's Check-In</button>
+<div id="status"></div>
+
+<script>
+  // Show today's date
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+  document.getElementById('date-display').textContent = today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  const WEBHOOK_URL = "https://prod-25.eastus.logic.azure.com:443/workflows/2a8e1e01f85d4458867490e1b4fd2272/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=8RC2pokffgtK3is6-bZyCn40r2c9AbPkS6c0TXeJvx4";
+
+  function getRadio(name) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? parseInt(el.value) : null;
+  }
+
+  async function submitCheckin() {
+    const fields = ['sleep','physical','mental','fatigue','pain','neuro_motor','neuro_cognitive','gi','psychiatric','exercise'];
+    const missing = fields.filter(f => getRadio(f) === null);
+
+    if (missing.length > 0) {
+      document.getElementById('status').innerHTML = '<span class="error">Please answer all questions before submitting.</span>';
+      return;
+    }
+
+    const payload = {
+      date: dateStr,
+      sleep: getRadio('sleep'),
+      physical: getRadio('physical'),
+      mental: getRadio('mental'),
+      fatigue: getRadio('fatigue'),
+      pain: getRadio('pain'),
+      neuro_motor: getRadio('neuro_motor'),
+      neuro_cognitive: getRadio('neuro_cognitive'),
+      gi: getRadio('gi'),
+      psychiatric: getRadio('psychiatric'),
+      exercise: getRadio('exercise'),
+      notes: document.getElementById('notes').value.trim()
+    };
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Logging...';
+    document.getElementById('status').textContent = '';
+
+    try {
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      // no-cors mode always returns opaque response — treat as success
+      document.getElementById('status').innerHTML = '<span class="success">✅ Health check-in logged successfully!</span>';
+      btn.textContent = '✅ Logged!';
+    } catch (err) {
+      document.getElementById('status').innerHTML = `<span class="error">❌ Error: ${err.message}. Please try again.</span>`;
+      btn.disabled = false;
+      btn.textContent = 'Log Tonight\'s Check-In';
+    }
+  }
+</script>
+</body>
+</html>
