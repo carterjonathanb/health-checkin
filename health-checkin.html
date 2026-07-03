@@ -359,6 +359,24 @@
   </div>
 </div>
 
+<!-- Q11: Eye Twitching -->
+<div class="card">
+  <div class="question">How severe was your eye twitching today (1–10)?</div>
+  <div class="fyi">1 = None · 10 = Worst-ever (seeking professional help)<br>FYI: Mild (occasional brief twitches) = 4–6; Severe (persistent twitching most of the day) = 7+</div>
+  <div class="scale">
+    <label><input type="radio" name="eye_twitch" value="1"><span class="scale-btn">1</span></label>
+    <label><input type="radio" name="eye_twitch" value="2"><span class="scale-btn">2</span></label>
+    <label><input type="radio" name="eye_twitch" value="3"><span class="scale-btn">3</span></label>
+    <label><input type="radio" name="eye_twitch" value="4"><span class="scale-btn">4</span></label>
+    <label><input type="radio" name="eye_twitch" value="5"><span class="scale-btn">5</span></label>
+    <label><input type="radio" name="eye_twitch" value="6"><span class="scale-btn">6</span></label>
+    <label><input type="radio" name="eye_twitch" value="7"><span class="scale-btn">7</span></label>
+    <label><input type="radio" name="eye_twitch" value="8"><span class="scale-btn">8</span></label>
+    <label><input type="radio" name="eye_twitch" value="9"><span class="scale-btn">9</span></label>
+    <label><input type="radio" name="eye_twitch" value="10"><span class="scale-btn">10</span></label>
+  </div>
+</div>
+
 <!-- Notes -->
 <div class="card">
   <div class="question">Notes</div>
@@ -383,7 +401,7 @@
   }
 
   async function submitCheckin() {
-    const fields = ['sleep','physical','mental','fatigue','pain','neuro_motor','neuro_cognitive','gi','psychiatric','exercise'];
+    const fields = ['sleep','physical','mental','fatigue','pain','neuro_motor','neuro_cognitive','gi','psychiatric','exercise','eye_twitch'];
     const missing = fields.filter(f => getRadio(f) === null);
 
     if (missing.length > 0) {
@@ -403,6 +421,7 @@
       gi: getRadio('gi'),
       psychiatric: getRadio('psychiatric'),
       exercise: getRadio('exercise'),
+      eye_twitch: getRadio('eye_twitch'),
       notes: document.getElementById('notes').value.trim()
     };
 
